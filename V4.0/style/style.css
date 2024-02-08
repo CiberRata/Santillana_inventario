@@ -1,0 +1,68 @@
+body {
+    padding-top:  20px;
+    padding-bottom: 0px;
+}
+
+
+.texto_busqueda{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 10px;
+}
+
+.texto_titulo{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    font-weight: bold;
+    padding-top: 50px;
+}
+
+.img_logo{
+    width: 158px;
+}
+
+.navbar.fixed-top {
+    padding-right: 50px; 
+    padding-left:  50px;
+}  
+
+.pagination-container {
+
+    padding-top: 50px; 
+
+}
+
+texto{
+
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.tabla_espacio{
+    margin-bottom: 30px;
+
+}
+
+.image-logo{
+    margin-top: 10px;
+    top: 10px; /* ajusta el valor según sea necesario */
+    left: 20px; /* ajusta el valor según sea necesario */
+    width: 200px; /* Define el ancho deseado */
+}
+
+/* Estilos para pantallas más pequeñas, como dispositivos móviles */
+@media (max-width: 767px) {
+    .image-logo {
+        width: 120px; /* Reducir el tamaño para dispositivos móviles */
+    }
+}
+
+
+.navbar-nav .nav-link {
+    transition: font-size 0.3s ease; /* Agrega una transición para suavizar el cambio */
+}
+
+.navbar-nav .nav-link:hover {
+    font-size: 140%; /* Aumenta el tamaño al 140% al pasar el mouse por encima */
+}

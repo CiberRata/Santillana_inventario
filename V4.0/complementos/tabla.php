@@ -1,0 +1,125 @@
+
+<!--------------------------->  
+
+
+<button id="mostrarBusqueda" class="btn btn-outline-dark">BUSCAR</button>
+
+<div id="busqueda" style="display: none; ">
+    <form method="GET">
+        <input type="text" name="filtro" placeholder="Buscar por Serie o Nombre" class="texto_busqueda">
+        <button type="submit" class="btn btn-outline-dark">Buscar</button>
+    </form>
+</div>
+
+<table id='tabladatos' class="table table-striped table-hover tabla_espacio">
+        <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Serie</th>
+                        <th>Usuario Responsable</th>
+                        <th>Usuario Anterior</th>
+                        <th>Estado Equipo</th>
+                        <th>Tipo Equipo</th>
+                        <th>Sede</th>
+                        <th>Gerencia</th>
+                        <th>Subgerencia</th>
+                    </tr>
+        </thead>
+    <tbody>
+        <?php
+        include('configuracion/conexionsql.php');
+        $conn = sqlsrv_connect($serverName, $connectionOptions);
+
+        if ($conn) {
+            $filtro = '';
+
+            if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['filtro']) && !empty(trim($_GET['filtro']))) {
+                $filtro = $_GET['filtro'];
+            }
+
+            $pageSize = 5;
+            $pageNumber = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $offset = ($pageNumber - 1) * $pageSize;
+
+            // Consulta SQL sin filtro
+            $sql = "SELECT COUNT(*) OVER() AS TotalRows,
+            E.nombre, E.serie, U.usuario_responsable, UA.usuario_anterior, ES.estado_equipo, TE.tipo_equipo, SD.sede, G.gerencia, SG.subgerencia
+            FROM Equipo E
+            INNER JOIN Estados_del_equipo ES ON E.estado_equipo = ES.id
+            INNER JOIN Tipo_equipo TE ON E.estado_equipo = TE.id
+            INNER JOIN Sede SD ON E.sede = SD.id
+            INNER JOIN Gerencia G ON E.gerencia = G.id
+            INNER JOIN subgerencia SG ON E.subgerencia = SG.id
+            INNER JOIN usuario_responsable U ON E.usuario_responsable = U.id
+            INNER JOIN usuario_anterior UA ON E.usuario_anterior = UA.id            
+            ORDER BY usuario_responsable OFFSET $offset ROWS FETCH NEXT $pageSize ROWS ONLY";
+
+            if (!empty($filtro)) {
+                // Si se ha enviado el formulario con el filtro, se agrega la cláusula WHERE para filtrar por Serie o Nombre
+                $sql = "SELECT COUNT(*) OVER() AS TotalRows,
+                E.nombre, E.serie, U.usuario_responsable, UA.usuario_anterior, ES.estado_equipo, TE.tipo_equipo, SD.sede, G.gerencia, SG.subgerencia
+                FROM Equipo E
+                INNER JOIN Estados_del_equipo ES ON E.estado_equipo = ES.id
+                INNER JOIN Tipo_equipo TE ON E.estado_equipo = TE.id
+                INNER JOIN Sede SD ON E.sede = SD.id
+                INNER JOIN Gerencia G ON E.gerencia = G.id
+                INNER JOIN subgerencia SG ON E.subgerencia = SG.id
+                INNER JOIN usuario_responsable U ON E.usuario_responsable = U.id
+                INNER JOIN usuario_anterior UA ON E.usuario_anterior = UA.id WHERE E.serie LIKE 'asd' OR E.nombre LIKE 'asd'          
+                ORDER BY usuario_responsable OFFSET $offset ROWS FETCH NEXT $pageSize ROWS ONLY";
+            }
+
+                            // Ejecutar la consulta
+                            $query = sqlsrv_query($conn, $sql);
+
+                            // Obtener el número total de filas
+                            if ($row = sqlsrv_fetch_array($query, SQLSRV_FETCH_ASSOC)) {
+                                $totalRows = $row['TotalRows'];
+                                // Calcular el número total de páginas
+                                $totalPages = ceil($totalRows / $pageSize);
+                                $_SESSION['totalPages'] = $totalPages;
+                            }
+            
+            
+                            $stmt = sqlsrv_prepare($conn, $sql);
+            
+            
+                            if ($stmt === false) {
+                                die(print_r(sqlsrv_errors(), true));
+            
+                            }
+                            
+                            if (sqlsrv_execute($stmt) === false) {
+                                die(print_r(sqlsrv_errors(), true));
+                            }
+                            
+            
+                            while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+                                echo "<tr>";
+                                echo "<td>" . $row['nombre'] . "</td>";
+                                echo "<td>" . $row['serie'] . "</td>";
+                                echo "<td>" . $row['usuario_responsable'] . "</td>";
+                                echo "<td>" . $row['usuario_anterior'] . "</td>";
+                                echo "<td>" . $row['estado_equipo'] . "</td>";
+                                echo "<td>" . $row['tipo_equipo'] . "</td>";
+                                echo "<td>" . $row['sede'] . "</td>";
+                                echo "<td>" . $row['gerencia'] . "</td>";
+                                echo "<td>" . $row['subgerencia'] . "</td>";
+                                echo "</tr>";
+                            }
+            
+                            sqlsrv_free_stmt($stmt);
+                            sqlsrv_close($conn);
+        } else {
+            echo "No se pudo establecer la conexión.";
+            die(print_r(sqlsrv_errors(), true));
+        }
+        ?>
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('mostrarBusqueda').addEventListener('click', function() {
+        document.getElementById('busqueda').style.display = 'block';
+    });
+</script>
